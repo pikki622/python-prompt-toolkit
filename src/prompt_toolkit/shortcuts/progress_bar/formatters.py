@@ -117,8 +117,9 @@ class Label(Formatter):
         if self.width:
             return self.width
 
-        all_labels = [self._add_suffix(c.label) for c in progress_bar.counters]
-        if all_labels:
+        if all_labels := [
+            self._add_suffix(c.label) for c in progress_bar.counters
+        ]:
             max_widths = max(fragment_list_width(l) for l in all_labels)
             return D(preferred=max_widths, max=max_widths)
         else:
@@ -180,12 +181,7 @@ class Bar(Formatter):
             sym_a, sym_b, sym_c = self.sym_a, self.sym_b, self.sym_c
 
             # Compute pb_a based on done, total, or stopped states.
-            if progress.done:
-                # 100% completed irrelevant of how much was actually marked as completed.
-                percent = 1.0
-            else:
-                # Show percentage completed.
-                percent = progress.percentage / 100
+            percent = 1.0 if progress.done else progress.percentage / 100
         else:
             # Total is unknown and bar is still running.
             sym_a, sym_b, sym_c = self.sym_c, self.unknown, self.sym_c
@@ -262,10 +258,9 @@ class TimeElapsed(Formatter):
         )
 
     def get_width(self, progress_bar: ProgressBar) -> AnyDimension:
-        all_values = [
+        if all_values := [
             len(_format_timedelta(c.time_elapsed)) for c in progress_bar.counters
-        ]
-        if all_values:
+        ]:
             return max(all_values)
         return 0
 
@@ -297,9 +292,7 @@ class TimeLeft(Formatter):
             len(_format_timedelta(c.time_left)) if c.time_left is not None else 7
             for c in progress_bar.counters
         ]
-        if all_values:
-            return max(all_values)
-        return 0
+        return max(all_values, default=0)
 
 
 class IterationsPerSecond(Formatter):
@@ -321,11 +314,10 @@ class IterationsPerSecond(Formatter):
         return HTML(self.template.format(iterations_per_second=value))
 
     def get_width(self, progress_bar: ProgressBar) -> AnyDimension:
-        all_values = [
+        if all_values := [
             len(f"{c.items_completed / c.time_elapsed.total_seconds():.2f}")
             for c in progress_bar.counters
-        ]
-        if all_values:
+        ]:
             return max(all_values)
         return 0
 
@@ -401,7 +393,7 @@ class Rainbow(Formatter):
 
         for i, (style, text, *_) in enumerate(result):
             result2.append(
-                (style + " " + self.colors[(i + shift) % len(self.colors)], text)
+                (f"{style} {self.colors[(i + shift) % len(self.colors)]}", text)
             )
         return result2
 

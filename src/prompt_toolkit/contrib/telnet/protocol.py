@@ -132,7 +132,7 @@ class TelnetProtocolParser:
         """
         Received terminal type.
         """
-        subcmd, data = data[0:1], data[1:]
+        subcmd, data = data[:1], data[1:]
         if subcmd == IS:
             ttype = data.decode("ascii")
             self.ttype_received_callback(ttype)
@@ -143,7 +143,7 @@ class TelnetProtocolParser:
         """
         Got negotiate data.
         """
-        command, payload = data[0:1], data[1:]
+        command, payload = data[:1], data[1:]
 
         if command == NAWS:
             self.naws(payload)

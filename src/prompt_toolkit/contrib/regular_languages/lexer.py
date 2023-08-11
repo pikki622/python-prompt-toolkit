@@ -44,42 +44,33 @@ class GrammarLexer(Lexer):
         self.lexers = lexers or {}
 
     def _get_text_fragments(self, text: str) -> StyleAndTextTuples:
-        m = self.compiled_grammar.match_prefix(text)
-
-        if m:
-            characters: StyleAndTextTuples = [(self.default_style, c) for c in text]
-
-            for v in m.variables():
-                # If we have a `Lexer` instance for this part of the input.
-                # Tokenize recursively and apply tokens.
-                lexer = self.lexers.get(v.varname)
-
-                if lexer:
-                    document = Document(text[v.start : v.stop])
-                    lexer_tokens_for_line = lexer.lex_document(document)
-                    text_fragments: StyleAndTextTuples = []
-                    for i in range(len(document.lines)):
-                        text_fragments.extend(lexer_tokens_for_line(i))
-                        text_fragments.append(("", "\n"))
-                    if text_fragments:
-                        text_fragments.pop()
-
-                    i = v.start
-                    for t, s, *_ in text_fragments:
-                        for c in s:
-                            if characters[i][0] == self.default_style:
-                                characters[i] = (t, characters[i][1])
-                            i += 1
-
-            # Highlight trailing input.
-            trailing_input = m.trailing_input()
-            if trailing_input:
-                for i in range(trailing_input.start, trailing_input.stop):
-                    characters[i] = ("class:trailing-input", characters[i][1])
-
-            return characters
-        else:
+        if not (m := self.compiled_grammar.match_prefix(text)):
             return [("", text)]
+        characters: StyleAndTextTuples = [(self.default_style, c) for c in text]
+
+        for v in m.variables():
+            if lexer := self.lexers.get(v.varname):
+                document = Document(text[v.start : v.stop])
+                lexer_tokens_for_line = lexer.lex_document(document)
+                text_fragments: StyleAndTextTuples = []
+                for i in range(len(document.lines)):
+                    text_fragments.extend(lexer_tokens_for_line(i))
+                    text_fragments.append(("", "\n"))
+                if text_fragments:
+                    text_fragments.pop()
+
+                i = v.start
+                for t, s, *_ in text_fragments:
+                    for _ in s:
+                        if characters[i][0] == self.default_style:
+                            characters[i] = (t, characters[i][1])
+                        i += 1
+
+        if trailing_input := m.trailing_input():
+            for i in range(trailing_input.start, trailing_input.stop):
+                characters[i] = ("class:trailing-input", characters[i][1])
+
+        return characters
 
     def lex_document(self, document: Document) -> Callable[[int], StyleAndTextTuples]:
         lines = list(split_lines(self._get_text_fragments(document.text)))

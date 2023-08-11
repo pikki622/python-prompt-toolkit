@@ -2,11 +2,12 @@
 """
 Example of a checkbox-list-based dialog.
 """
+
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.shortcuts import checkboxlist_dialog, message_dialog
 from prompt_toolkit.styles import Style
 
-results = checkboxlist_dialog(
+if results := checkboxlist_dialog(
     title="CheckboxList dialog",
     text="What would you like in your breakfast ?",
     values=[
@@ -26,8 +27,7 @@ results = checkboxlist_dialog(
             "dialog.body label": "#fd8bb6",
         }
     ),
-).run()
-if results:
+).run():
     message_dialog(
         title="Room service",
         text="You selected: %s\nGreat choice sir !" % ",".join(results),

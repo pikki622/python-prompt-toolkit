@@ -70,7 +70,7 @@ def main():
     # Read input.
     print('Press F4 to insert "hello world", type "xy" to insert "z":')
     text = prompt("> ", key_bindings=bindings)
-    print("You said: %s" % text)
+    print(f"You said: {text}")
 
 
 if __name__ == "__main__":

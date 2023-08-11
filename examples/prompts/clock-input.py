@@ -18,7 +18,7 @@ def get_prompt():
 
 def main():
     result = prompt(get_prompt, refresh_interval=0.5)
-    print("You said: %s" % result)
+    print(f"You said: {result}")
 
 
 if __name__ == "__main__":

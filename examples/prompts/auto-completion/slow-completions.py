@@ -96,7 +96,7 @@ def main():
         bottom_toolbar=bottom_toolbar,
         complete_style=CompleteStyle.MULTI_COLUMN,
     )
-    print("You said: %s" % text)
+    print(f"You said: {text}")
 
 
 if __name__ == "__main__":

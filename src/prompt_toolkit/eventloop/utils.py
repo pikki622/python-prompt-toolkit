@@ -88,8 +88,7 @@ def get_traceback_from_context(context: dict[str, Any]) -> TracebackType | None:
     """
     Get the traceback object from the context.
     """
-    exception = context.get("exception")
-    if exception:
+    if exception := context.get("exception"):
         if hasattr(exception, "__traceback__"):
             return cast(TracebackType, exception.__traceback__)
         else:

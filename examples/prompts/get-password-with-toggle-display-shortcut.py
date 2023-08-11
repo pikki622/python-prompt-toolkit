@@ -21,7 +21,7 @@ def main():
     password = prompt(
         "Password: ", is_password=Condition(lambda: hidden[0]), key_bindings=bindings
     )
-    print("You said: %s" % password)
+    print(f"You said: {password}")
 
 
 if __name__ == "__main__":

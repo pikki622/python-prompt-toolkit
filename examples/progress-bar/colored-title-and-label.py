@@ -14,7 +14,7 @@ def main():
     label = HTML("<ansired>some file</ansired>: ")
 
     with ProgressBar(title=title) as pb:
-        for i in pb(range(800), label=label):
+        for _ in pb(range(800), label=label):
             time.sleep(0.01)
 
 

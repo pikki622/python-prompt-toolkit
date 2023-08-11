@@ -396,15 +396,14 @@ class ConsoleInputReader:
         if u_char == "\x00":
             if ev.VirtualKeyCode in self.keycodes:
                 result = KeyPress(self.keycodes[ev.VirtualKeyCode], "")
+        elif ascii_char in self.mappings:
+            if self.mappings[ascii_char] == Keys.ControlJ:
+                u_char = (
+                    "\n"  # Windows sends \n, turn into \r for unix compatibility.
+                )
+            result = KeyPress(self.mappings[ascii_char], u_char)
         else:
-            if ascii_char in self.mappings:
-                if self.mappings[ascii_char] == Keys.ControlJ:
-                    u_char = (
-                        "\n"  # Windows sends \n, turn into \r for unix compatibility.
-                    )
-                result = KeyPress(self.mappings[ascii_char], u_char)
-            else:
-                result = KeyPress(u_char, u_char)
+            result = KeyPress(u_char, u_char)
 
         # First we handle Shift-Control-Arrow/Home/End (need to do this first)
         if (
@@ -488,24 +487,11 @@ class ConsoleInputReader:
         ):
             return [KeyPress(Keys.Escape, ""), result]
 
-        # Return result. If alt was pressed, prefix the result with an
-        # 'Escape' key, just like unix VT100 terminals do.
-
-        # NOTE: Only replace the left alt with escape. The right alt key often
-        #       acts as altgr and is used in many non US keyboard layouts for
-        #       typing some special characters, like a backslash. We don't want
-        #       all backslashes to be prefixed with escape. (Esc-\ has a
-        #       meaning in E-macs, for instance.)
-        if result:
-            meta_pressed = control_key_state & self.LEFT_ALT_PRESSED
-
-            if meta_pressed:
-                return [KeyPress(Keys.Escape, ""), result]
-            else:
-                return [result]
-
-        else:
+        if not result:
             return []
+        meta_pressed = control_key_state & self.LEFT_ALT_PRESSED
+
+        return [KeyPress(Keys.Escape, ""), result] if meta_pressed else [result]
 
     def _handle_mouse(self, ev: MOUSE_EVENT_RECORD) -> list[KeyPress]:
         """
@@ -519,23 +505,21 @@ class ConsoleInputReader:
 
         # Scroll events.
         if event_flags & MOUSE_WHEELED:
-            if button_state > 0:
-                event_type = MouseEventType.SCROLL_UP
-            else:
-                event_type = MouseEventType.SCROLL_DOWN
-        else:
-            # Handle button state for non-scroll events.
-            if button_state == FROM_LEFT_1ST_BUTTON_PRESSED:
-                button = MouseButton.LEFT
+            event_type = (
+                MouseEventType.SCROLL_UP
+                if button_state > 0
+                else MouseEventType.SCROLL_DOWN
+            )
+        elif button_state == FROM_LEFT_1ST_BUTTON_PRESSED:
+            button = MouseButton.LEFT
 
-            elif button_state == RIGHTMOST_BUTTON_PRESSED:
-                button = MouseButton.RIGHT
+        elif button_state == RIGHTMOST_BUTTON_PRESSED:
+            button = MouseButton.RIGHT
 
         # Move events.
         if event_flags & MOUSE_MOVED:
             event_type = MouseEventType.MOUSE_MOVE
 
-        # No key pressed anymore: mouse up.
         if event_type is None:
             if button_state > 0:
                 # Some button pressed.

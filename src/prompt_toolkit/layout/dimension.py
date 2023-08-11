@@ -76,11 +76,8 @@ class Dimension:
             raise ValueError("Invalid Dimension: max < min.")
 
         # Make sure that the 'preferred' size is always in the min..max range.
-        if self.preferred < self.min:
-            self.preferred = self.min
-
-        if self.preferred > self.max:
-            self.preferred = self.max
+        self.preferred = max(self.preferred, self.min)
+        self.preferred = min(self.preferred, self.max)
 
     @classmethod
     def exact(cls, amount: int) -> Dimension:
@@ -113,7 +110,7 @@ class Dimension:
         if self.weight_specified:
             fields.append("weight=%r" % self.weight)
 
-        return "Dimension(%s)" % ", ".join(fields)
+        return f'Dimension({", ".join(fields)})'
 
 
 def sum_layout_dimensions(dimensions: list[Dimension]) -> Dimension:
@@ -141,10 +138,7 @@ def max_layout_dimensions(dimensions: list[Dimension]) -> Dimension:
     if all(d.is_zero() for d in dimensions):
         return dimensions[0]
 
-    # Ignore empty dimensions. (They should not reduce the size of others.)
-    dimensions = [d for d in dimensions if not d.is_zero()]
-
-    if dimensions:
+    if dimensions := [d for d in dimensions if not d.is_zero()]:
         # Take the highest minimum dimension.
         min_ = max(d.min for d in dimensions)
 
@@ -205,11 +199,7 @@ def is_dimension(value: object) -> TypeGuard[AnyDimension]:
     """
     if value is None:
         return True
-    if callable(value):
-        return True  # Assume it's a callable that doesn't take arguments.
-    if isinstance(value, (int, Dimension)):
-        return True
-    return False
+    return True if callable(value) else isinstance(value, (int, Dimension))
 
 
 # Common alias.

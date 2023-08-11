@@ -104,10 +104,7 @@ def start_search(
             return
         buffer_control = layout.current_control
 
-    # Only if this control is searchable.
-    search_buffer_control = buffer_control.search_buffer_control
-
-    if search_buffer_control:
+    if search_buffer_control := buffer_control.search_buffer_control:
         buffer_control.search_state.direction = direction
 
         # Make sure to focus the search BufferControl

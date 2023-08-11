@@ -203,7 +203,7 @@ class AdjustBrightnessStyleTransformation(StyleTransformation):
 
         # Parse RRGGBB format.
         return (
-            int(color[0:2], 16) / 255.0,
+            int(color[:2], 16) / 255.0,
             int(color[2:4], 16) / 255.0,
             int(color[4:6], 16) / 255.0,
         )

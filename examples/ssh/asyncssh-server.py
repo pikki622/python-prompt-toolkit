@@ -73,7 +73,7 @@ async def interact(ssh_session: PromptToolkitSSHSession) -> None:
 
     # Simple progress bar.
     with ProgressBar() as pb:
-        for i in pb(range(50)):
+        for _ in pb(range(50)):
             await asyncio.sleep(0.1)
 
     # Normal prompt.

@@ -250,7 +250,7 @@ def take_using_weights(
                     integers, not floats.)
     """
     assert len(items) == len(weights)
-    assert len(items) > 0
+    assert items
 
     # Remove items with zero-weight.
     items2 = []
@@ -268,7 +268,7 @@ def take_using_weights(
         raise ValueError("Did't got any items with a positive weight.")
 
     #
-    already_taken = [0 for i in items]
+    already_taken = [0 for _ in items]
     item_count = len(items)
     max_weight = max(weights)
 
@@ -290,18 +290,12 @@ def take_using_weights(
 
 def to_str(value: Callable[[], str] | str) -> str:
     "Turn callable or string into string."
-    if callable(value):
-        return to_str(value())
-    else:
-        return str(value)
+    return to_str(value()) if callable(value) else str(value)
 
 
 def to_int(value: Callable[[], int] | int) -> int:
     "Turn callable or int into int."
-    if callable(value):
-        return to_int(value())
-    else:
-        return int(value)
+    return to_int(value()) if callable(value) else int(value)
 
 
 AnyFloat = Union[Callable[[], float], float]
@@ -309,10 +303,7 @@ AnyFloat = Union[Callable[[], float], float]
 
 def to_float(value: AnyFloat) -> float:
     "Turn callable or float into float."
-    if callable(value):
-        return to_float(value())
-    else:
-        return float(value)
+    return to_float(value()) if callable(value) else float(value)
 
 
 def is_dumb_terminal(term: str | None = None) -> bool:

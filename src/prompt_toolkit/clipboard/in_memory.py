@@ -34,10 +34,7 @@ class InMemoryClipboard(Clipboard):
             self._ring.pop()
 
     def get_data(self) -> ClipboardData:
-        if self._ring:
-            return self._ring[0]
-        else:
-            return ClipboardData()
+        return self._ring[0] if self._ring else ClipboardData()
 
     def rotate(self) -> None:
         if self._ring:

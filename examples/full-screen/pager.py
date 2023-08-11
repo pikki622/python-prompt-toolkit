@@ -25,13 +25,10 @@ with open(_pager_py_path, "rb") as f:
 
 def get_statusbar_text():
     return [
-        ("class:status", _pager_py_path + " - "),
+        ("class:status", f"{_pager_py_path} - "),
         (
             "class:status.position",
-            "{}:{}".format(
-                text_area.document.cursor_position_row + 1,
-                text_area.document.cursor_position_col + 1,
-            ),
+            f"{text_area.document.cursor_position_row + 1}:{text_area.document.cursor_position_col + 1}",
         ),
         ("class:status", " - Press "),
         ("class:status.key", "Ctrl-C"),

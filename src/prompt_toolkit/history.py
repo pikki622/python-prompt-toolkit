@@ -226,10 +226,7 @@ class InMemoryHistory(History):
     def __init__(self, history_strings: Sequence[str] | None = None) -> None:
         super().__init__()
         # Emulating disk storage.
-        if history_strings is None:
-            self._storage = []
-        else:
-            self._storage = list(history_strings)
+        self._storage = [] if history_strings is None else list(history_strings)
 
     def load_history_strings(self) -> Iterable[str]:
         yield from self._storage[::-1]

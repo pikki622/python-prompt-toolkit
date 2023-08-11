@@ -48,11 +48,7 @@ def main():
         swapped[0] = not swapped[0]
 
     def bottom_toolbar():
-        if swapped[0]:
-            on = "on=true"
-        else:
-            on = "on=false"
-
+        on = "on=true" if swapped[0] else "on=false"
         return (
             HTML(
                 'Press <style bg="#222222" fg="#ff8888">[control-t]</style> '
@@ -71,7 +67,7 @@ def main():
         lexer=PygmentsLexer(HtmlLexer),
         swap_light_and_dark_colors=Condition(lambda: swapped[0]),
     )
-    print("You said: %s" % text)
+    print(f"You said: {text}")
 
 
 if __name__ == "__main__":

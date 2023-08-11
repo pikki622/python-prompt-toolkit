@@ -72,8 +72,7 @@ if __name__ == "__main__":
             text = prompt(
                 "Calculate: ", lexer=lexer, completer=completer, style=example_style
             )
-            m = g.match(text)
-            if m:
+            if m := g.match(text):
                 vars = m.variables()
             else:
                 print("Invalid command\n")

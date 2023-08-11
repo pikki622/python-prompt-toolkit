@@ -176,9 +176,5 @@ def main(database):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        db = ":memory:"
-    else:
-        db = sys.argv[1]
-
+    db = ":memory:" if len(sys.argv) < 2 else sys.argv[1]
     main(db)

@@ -100,16 +100,15 @@ def scroll_one_line_down(event: E) -> None:
     """
     scroll_offset += 1
     """
-    w = event.app.layout.current_window
-    b = event.app.current_buffer
-
-    if w:
+    if w := event.app.layout.current_window:
         # When the cursor is at the top, move to the next line. (Otherwise, only scroll.)
         if w.render_info:
             info = w.render_info
 
             if w.vertical_scroll < info.content_height - info.window_height:
                 if info.cursor_position.y <= info.configured_scroll_offsets.top:
+                    b = event.app.current_buffer
+
                     b.cursor_position += b.document.get_cursor_down_position()
 
                 w.vertical_scroll += 1
@@ -119,15 +118,12 @@ def scroll_one_line_up(event: E) -> None:
     """
     scroll_offset -= 1
     """
-    w = event.app.layout.current_window
-    b = event.app.current_buffer
-
-    if w:
+    if w := event.app.layout.current_window:
         # When the cursor is at the bottom, move to the previous line. (Otherwise, only scroll.)
         if w.render_info:
-            info = w.render_info
-
             if w.vertical_scroll > 0:
+                info = w.render_info
+
                 first_line_height = info.get_height_for_line(info.first_visible_line())
 
                 cursor_up = info.cursor_position.y - (
@@ -136,6 +132,8 @@ def scroll_one_line_up(event: E) -> None:
                     - first_line_height
                     - info.configured_scroll_offsets.bottom
                 )
+
+                b = event.app.current_buffer
 
                 # Move cursor up, as many steps as the height of the first line.
                 # TODO: not entirely correct yet, in case of line wrapping and many long lines.

@@ -274,29 +274,25 @@ class HighlightSelectionProcessor(Processor):
             _,
         ) = transformation_input.unpack()
 
-        selected_fragment = " class:selected "
-
-        # In case of selection, highlight all matches.
-        selection_at_line = document.selection_range_at_line(lineno)
-
-        if selection_at_line:
+        if selection_at_line := document.selection_range_at_line(lineno):
             from_, to = selection_at_line
             from_ = source_to_display(from_)
             to = source_to_display(to)
 
             fragments = explode_text_fragments(fragments)
 
+            selected_fragment = " class:selected "
+
             if from_ == 0 and to == 0 and len(fragments) == 0:
                 # When this is an empty line, insert a space in order to
                 # visualise the selection.
                 return Transformation([(selected_fragment, " ")])
-            else:
-                for i in range(from_, to):
-                    if i < len(fragments):
-                        old_fragment, old_text, *_ = fragments[i]
-                        fragments[i] = (old_fragment + selected_fragment, old_text)
-                    elif i == len(fragments):
-                        fragments.append((selected_fragment, " "))
+            for i in range(from_, to):
+                if i < len(fragments):
+                    old_fragment, old_text, *_ = fragments[i]
+                    fragments[i] = (old_fragment + selected_fragment, old_text)
+                elif i == len(fragments):
+                    fragments.append((selected_fragment, " "))
 
         return Transformation(fragments)
 
@@ -405,12 +401,9 @@ class HighlightMatchingBracketProcessor(Processor):
 
         # Get the highlight positions.
         key = (get_app().render_counter, document.text, document.cursor_position)
-        positions = self._positions_cache.get(
+        if positions := self._positions_cache.get(
             key, lambda: self._get_positions_to_highlight(document)
-        )
-
-        # Apply if positions were found at this line.
-        if positions:
+        ):
             for row, col in positions:
                 if row == lineno:
                     col = source_to_display(col)
@@ -471,9 +464,7 @@ class DisplayMultipleCursors(Processor):
                         style += fragment_suffix
                         fragments[column] = (style, text)
 
-            return Transformation(fragments)
-        else:
-            return Transformation(fragments)
+        return Transformation(fragments)
 
 
 class BeforeInput(Processor):
@@ -531,14 +522,13 @@ class ShowArg(BeforeInput):
         app = get_app()
         if app.key_processor.arg is None:
             return []
-        else:
-            arg = app.key_processor.arg
+        arg = app.key_processor.arg
 
-            return [
-                ("class:prompt.arg", "(arg: "),
-                ("class:prompt.arg.text", str(arg)),
-                ("class:prompt.arg", ") "),
-            ]
+        return [
+            ("class:prompt.arg", "(arg: "),
+            ("class:prompt.arg.text", str(arg)),
+            ("class:prompt.arg", ") "),
+        ]
 
     def __repr__(self) -> str:
         return "ShowArg()"
@@ -558,13 +548,11 @@ class AfterInput(Processor):
         self.style = style
 
     def apply_transformation(self, ti: TransformationInput) -> Transformation:
-        # Insert fragments after the last line.
-        if ti.lineno == ti.document.line_count - 1:
-            # Get fragments.
-            fragments_after = to_formatted_text(self.text, self.style)
-            return Transformation(fragments=ti.fragments + fragments_after)
-        else:
+        if ti.lineno != ti.document.line_count - 1:
             return Transformation(fragments=ti.fragments)
+        # Get fragments.
+        fragments_after = to_formatted_text(self.text, self.style)
+        return Transformation(fragments=ti.fragments + fragments_after)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.text!r}, style={self.style!r})"
@@ -580,18 +568,16 @@ class AppendAutoSuggestion(Processor):
         self.style = style
 
     def apply_transformation(self, ti: TransformationInput) -> Transformation:
-        # Insert fragments after the last line.
-        if ti.lineno == ti.document.line_count - 1:
-            buffer = ti.buffer_control.buffer
-
-            if buffer.suggestion and ti.document.is_cursor_at_the_end:
-                suggestion = buffer.suggestion.text
-            else:
-                suggestion = ""
-
-            return Transformation(fragments=ti.fragments + [(self.style, suggestion)])
-        else:
+        if ti.lineno != ti.document.line_count - 1:
             return Transformation(fragments=ti.fragments)
+        buffer = ti.buffer_control.buffer
+
+        suggestion = (
+            buffer.suggestion.text
+            if buffer.suggestion and ti.document.is_cursor_at_the_end
+            else ""
+        )
+        return Transformation(fragments=ti.fragments + [(self.style, suggestion)])
 
 
 class ShowLeadingWhiteSpaceProcessor(Processor):
@@ -950,13 +936,10 @@ def merge_processors(processors: list[Processor]) -> Processor:
     """
     Merge multiple `Processor` objects into one.
     """
-    if len(processors) == 0:
+    if not processors:
         return DummyProcessor()
 
-    if len(processors) == 1:
-        return processors[0]  # Nothing to merge.
-
-    return _MergedProcessor(processors)
+    return processors[0] if len(processors) == 1 else _MergedProcessor(processors)
 
 
 class _MergedProcessor(Processor):

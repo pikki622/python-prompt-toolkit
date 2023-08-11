@@ -100,7 +100,6 @@ class ANSI:
                     if char.isdigit():
                         current += char
 
-                    # Eval number
                     else:
                         # Limit and save number value
                         params.append(min(int(current or 0), 9999))
@@ -109,16 +108,14 @@ class ANSI:
                         if char == ";":
                             current = ""
 
-                        # Check and evaluate color codes
                         elif char == "m":
                             # Set attributes and token.
                             self._select_graphic_rendition(params)
                             style = self._create_style_string()
                             break
 
-                        # Check and evaluate cursor forward
                         elif char == "C":
-                            for i in range(params[0]):
+                            for _ in range(params[0]):
                                 # add <SPACE> using current style
                                 formatted_text.append((style, " "))
                             break
@@ -139,11 +136,7 @@ class ANSI:
         """
         Taken a list of graphics attributes and apply changes.
         """
-        if not attrs:
-            attrs = [0]
-        else:
-            attrs = list(attrs[::-1])
-
+        attrs = [0] if not attrs else list(attrs[::-1])
         while attrs:
             attr = attrs.pop()
 
@@ -153,8 +146,6 @@ class ANSI:
                 self._bgcolor = _bg_colors[attr]
             elif attr == 1:
                 self._bold = True
-            # elif attr == 2:
-            #   self._faint = True
             elif attr == 3:
                 self._italic = True
             elif attr == 4:
@@ -199,7 +190,7 @@ class ANSI:
                 n = attrs.pop()
 
                 # 256 colors.
-                if n == 5 and len(attrs) >= 1:
+                if n == 5 and attrs:
                     if attr == 38:
                         m = attrs.pop()
                         self._color = _256_colors.get(m)
@@ -231,7 +222,7 @@ class ANSI:
         if self._color:
             result.append(self._color)
         if self._bgcolor:
-            result.append("bg:" + self._bgcolor)
+            result.append(f"bg:{self._bgcolor}")
         if self._bold:
             result.append("bold")
         if self._underline:
@@ -277,11 +268,10 @@ class ANSI:
 _fg_colors = {v: k for k, v in FG_ANSI_COLORS.items()}
 _bg_colors = {v: k for k, v in BG_ANSI_COLORS.items()}
 
-# Mapping of the escape codes for 256colors to their 'ffffff' value.
-_256_colors = {}
-
-for i, (r, g, b) in enumerate(_256_colors_table.colors):
-    _256_colors[i] = f"#{r:02x}{g:02x}{b:02x}"
+_256_colors = {
+    i: f"#{r:02x}{g:02x}{b:02x}"
+    for i, (r, g, b) in enumerate(_256_colors_table.colors)
+}
 
 
 def ansi_escape(text: object) -> str:

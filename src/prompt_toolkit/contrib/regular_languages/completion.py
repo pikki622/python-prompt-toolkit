@@ -34,14 +34,10 @@ class GrammarCompleter(Completer):
     def get_completions(
         self, document: Document, complete_event: CompleteEvent
     ) -> Iterable[Completion]:
-        m = self.compiled_grammar.match_prefix(document.text_before_cursor)
-
-        if m:
-            completions = self._remove_duplicates(
+        if m := self.compiled_grammar.match_prefix(document.text_before_cursor):
+            yield from self._remove_duplicates(
                 self._get_completions_for_match(m, complete_event)
             )
-
-            yield from completions
 
     def _get_completions_for_match(
         self, match: Match, complete_event: CompleteEvent
@@ -55,9 +51,7 @@ class GrammarCompleter(Completer):
             varname = match_variable.varname
             start = match_variable.start
 
-            completer = self.completers.get(varname)
-
-            if completer:
+            if completer := self.completers.get(varname):
                 text = match_variable.value
 
                 # Unwrap text.

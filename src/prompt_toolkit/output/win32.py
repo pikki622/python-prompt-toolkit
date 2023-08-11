@@ -72,16 +72,11 @@ class NoConsoleScreenBufferError(Exception):
         # Are we running in 'xterm' on Windows, like git-bash for instance?
         xterm = "xterm" in os.environ.get("TERM", "")
 
-        if xterm:
-            message = (
-                "Found %s, while expecting a Windows console. "
-                'Maybe try to run this program using "winpty" '
-                "or run it in cmd.exe instead. Or otherwise, "
-                "in case of Cygwin, use the Python executable "
-                "that is compiled for Cygwin." % os.environ["TERM"]
-            )
-        else:
-            message = "No Windows console found. Are you running cmd.exe?"
+        message = (
+            f'Found {os.environ["TERM"]}, while expecting a Windows console. Maybe try to run this program using "winpty" or run it in cmd.exe instead. Or otherwise, in case of Cygwin, use the Python executable that is compiled for Cygwin.'
+            if xterm
+            else "No Windows console found. Are you running cmd.exe?"
+        )
         super().__init__(message)
 
 
@@ -207,14 +202,9 @@ class Win32Output(Output):
 
         self.flush()
         sbinfo = CONSOLE_SCREEN_BUFFER_INFO()
-        success = windll.kernel32.GetConsoleScreenBufferInfo(
+        if success := windll.kernel32.GetConsoleScreenBufferInfo(
             self.hconsole, byref(sbinfo)
-        )
-
-        # success = self._winapi(windll.kernel32.GetConsoleScreenBufferInfo,
-        #                        self.hconsole, byref(sbinfo))
-
-        if success:
+        ):
             return sbinfo
         else:
             raise NoConsoleScreenBufferError
@@ -303,7 +293,7 @@ class Win32Output(Output):
         if color_depth != ColorDepth.DEPTH_1_BIT:
             # Override the last four bits: foreground color.
             if fgcolor:
-                win_attrs = win_attrs & ~0xF
+                win_attrs &= ~0xF
                 win_attrs |= self.color_lookup_table.lookup_fg_color(fgcolor)
 
             # Override the next four bits: background color.
@@ -646,7 +636,7 @@ class ColorLookupTable:
         indexes = self.best_match.get(color, None)
         if indexes is None:
             try:
-                rgb = int(str(color), 16)
+                rgb = int(color, 16)
             except ValueError:
                 rgb = 0
 

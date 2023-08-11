@@ -65,14 +65,17 @@ class PosixPipeInput(Vt100Input, PipeInput):
         # Private constructor. Users should use the public `.create()` method.
         self.pipe = _pipe
 
+
+
         class Stdin:
             encoding = "utf-8"
 
-            def isatty(stdin) -> bool:
+            def isatty(self) -> bool:
                 return True
 
             def fileno(stdin) -> int:
                 return self.pipe.read_fd
+
 
         super().__init__(cast(TextIO, Stdin()))
         self.send_text(_text)

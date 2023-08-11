@@ -11,7 +11,7 @@ from prompt_toolkit.lexers import PygmentsLexer
 
 def main():
     text = prompt("Enter HTML: ", lexer=PygmentsLexer(HtmlLexer))
-    print("You said: %s" % text)
+    print(f"You said: {text}")
 
 
 if __name__ == "__main__":

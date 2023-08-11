@@ -1,6 +1,7 @@
 """
 The default styling.
 """
+
 from __future__ import annotations
 
 from prompt_toolkit.cache import memoized
@@ -130,8 +131,8 @@ PROMPT_TOOLKIT_STYLE = [
 
 
 # Style that will turn for instance the class 'red' into 'red'.
-COLORS_STYLE = [(name, "fg:" + name) for name in ANSI_COLOR_NAMES] + [
-    (name.lower(), "fg:" + name) for name in NAMED_COLORS
+COLORS_STYLE = [(name, f"fg:{name}") for name in ANSI_COLOR_NAMES] + [
+    (name.lower(), f"fg:{name}") for name in NAMED_COLORS
 ]
 
 

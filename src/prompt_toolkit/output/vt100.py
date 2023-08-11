@@ -174,11 +174,7 @@ class _16ColorCache:
         match = _get_closest_ansi_color(r, g, b, exclude=exclude)
 
         # Turn color name into code.
-        if self.bg:
-            code = BG_ANSI_COLORS[match]
-        else:
-            code = FG_ANSI_COLORS[match]
-
+        code = BG_ANSI_COLORS[match] if self.bg else FG_ANSI_COLORS[match]
         return code, match
 
 
@@ -189,25 +185,24 @@ class _256ColorCache(Dict[Tuple[int, int, int], int]):
 
     def __init__(self) -> None:
         # Build color table.
-        colors: list[tuple[int, int, int]] = []
-
-        # colors 0..15: 16 basic colors
-        colors.append((0x00, 0x00, 0x00))  # 0
-        colors.append((0xCD, 0x00, 0x00))  # 1
-        colors.append((0x00, 0xCD, 0x00))  # 2
-        colors.append((0xCD, 0xCD, 0x00))  # 3
-        colors.append((0x00, 0x00, 0xEE))  # 4
-        colors.append((0xCD, 0x00, 0xCD))  # 5
-        colors.append((0x00, 0xCD, 0xCD))  # 6
-        colors.append((0xE5, 0xE5, 0xE5))  # 7
-        colors.append((0x7F, 0x7F, 0x7F))  # 8
-        colors.append((0xFF, 0x00, 0x00))  # 9
-        colors.append((0x00, 0xFF, 0x00))  # 10
-        colors.append((0xFF, 0xFF, 0x00))  # 11
-        colors.append((0x5C, 0x5C, 0xFF))  # 12
-        colors.append((0xFF, 0x00, 0xFF))  # 13
-        colors.append((0x00, 0xFF, 0xFF))  # 14
-        colors.append((0xFF, 0xFF, 0xFF))  # 15
+        colors: list[tuple[int, int, int]] = [
+            (0x00, 0x00, 0x00),
+            (0xCD, 0x00, 0x00),
+            (0x00, 0xCD, 0x00),
+            (0xCD, 0xCD, 0x00),
+            (0x00, 0x00, 0xEE),
+            (0xCD, 0x00, 0xCD),
+            (0x00, 0xCD, 0xCD),
+            (0xE5, 0xE5, 0xE5),
+            (0x7F, 0x7F, 0x7F),
+            (0xFF, 0x00, 0x00),
+            (0x00, 0xFF, 0x00),
+            (0xFF, 0xFF, 0x00),
+            (0x5C, 0x5C, 0xFF),
+            (0xFF, 0x00, 0xFF),
+            (0x00, 0xFF, 0xFF),
+            (0xFF, 0xFF, 0xFF),
+        ]
 
         # colors 16..232: the 6x6x6 color cube
         valuerange = (0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF)
@@ -296,11 +291,7 @@ class _EscapeCodeCache(Dict[Attrs, str]):
         if strike:
             parts.append("9")
 
-        if parts:
-            result = "\x1b[0;" + ";".join(parts) + "m"
-        else:
-            result = "\x1b[0m"
-
+        result = "\x1b[0;" + ";".join(parts) + "m" if parts else "\x1b[0m"
         self[attrs] = result
         return result
 
@@ -333,11 +324,9 @@ class _EscapeCodeCache(Dict[Attrs, str]):
             if not color or self.color_depth == ColorDepth.DEPTH_1_BIT:
                 return []
 
-            # 16 ANSI colors. (Given by name.)
             elif color in table:
                 return [table[color]]
 
-            # RGB colors. (Defined as 'ffffff'.)
             else:
                 try:
                     rgb = self._color_name_to_rgb(color)
@@ -347,10 +336,7 @@ class _EscapeCodeCache(Dict[Attrs, str]):
                 # When only 16 colors are supported, use that.
                 if self.color_depth == ColorDepth.DEPTH_4_BIT:
                     if bg:  # Background.
-                        if fg_color != bg_color:
-                            exclude = [fg_ansi]
-                        else:
-                            exclude = []
+                        exclude = [fg_ansi] if fg_color != bg_color else []
                         code, name = _16_bg_colors.get_code(rgb, exclude=exclude)
                         return [code]
                     else:  # Foreground.
@@ -358,12 +344,10 @@ class _EscapeCodeCache(Dict[Attrs, str]):
                         fg_ansi = name
                         return [code]
 
-                # True colors. (Only when this feature is enabled.)
                 elif self.color_depth == ColorDepth.DEPTH_24_BIT:
                     r, g, b = rgb
                     return [(48 if bg else 38), 2, r, g, b]
 
-                # 256 RGB colors.
                 else:
                     return [(48 if bg else 38), 5, _256_colors[rgb]]
 

@@ -37,7 +37,7 @@ def main():
 
     # Read input.
     text = prompt("Say something: ", key_bindings=bindings)
-    print("You said: %s" % text)
+    print(f"You said: {text}")
 
 
 if __name__ == "__main__":

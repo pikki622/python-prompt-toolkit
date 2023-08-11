@@ -358,15 +358,14 @@ class FormattedTextControl(UIControl):
         Return the preferred height for this control.
         """
         content = self.create_content(width, None)
-        if wrap_lines:
-            height = 0
-            for i in range(content.line_count):
-                height += content.get_height_for_line(i, width, get_line_prefix)
-                if height >= max_available_height:
-                    return max_available_height
-            return height
-        else:
+        if not wrap_lines:
             return content.line_count
+        height = 0
+        for i in range(content.line_count):
+            height += content.get_height_for_line(i, width, get_line_prefix)
+            if height >= max_available_height:
+                return max_available_height
+        return height
 
     def create_content(self, width: int, height: int | None) -> UIContent:
         # Get fragments
@@ -446,11 +445,7 @@ class FormattedTextControl(UIControl):
                     count += len(item[1])
                     if count > xpos:
                         if len(item) >= 3:
-                            # Handler found. Call it.
-                            # (Handler can return NotImplemented, so return
-                            # that result.)
-                            handler = item[2]  # type: ignore
-                            return handler(mouse_event)
+                            return item[2](mouse_event)
                         else:
                             break
 
@@ -575,9 +570,7 @@ class BufferControl(UIControl):
     @property
     def search_buffer(self) -> Buffer | None:
         control = self.search_buffer_control
-        if control is not None:
-            return control.buffer
-        return None
+        return control.buffer if control is not None else None
 
     @property
     def search_state(self) -> SearchState:
@@ -587,8 +580,7 @@ class BufferControl(UIControl):
         for searching multiple `BufferControls`, then they share the same
         `SearchState`.
         """
-        search_buffer_control = self.search_buffer_control
-        if search_buffer_control:
+        if search_buffer_control := self.search_buffer_control:
             return search_buffer_control.searcher_search_state
         else:
             return SearchState()
@@ -875,18 +867,16 @@ class BufferControl(UIControl):
                     # Don't handle scroll events here.
                     return NotImplemented
 
-        # Not focused, but focusing on click events.
-        else:
-            if (
+        elif (
                 self.focus_on_click()
                 and mouse_event.event_type == MouseEventType.MOUSE_UP
             ):
-                # Focus happens on mouseup. (If we did this on mousedown, the
-                # up event will be received at the point where this widget is
-                # focused and be handled anyway.)
-                get_app().layout.current_control = self
-            else:
-                return NotImplemented
+            # Focus happens on mouseup. (If we did this on mousedown, the
+            # up event will be received at the point where this widget is
+            # focused and be handled anyway.)
+            get_app().layout.current_control = self
+        else:
+            return NotImplemented
 
         return None
 

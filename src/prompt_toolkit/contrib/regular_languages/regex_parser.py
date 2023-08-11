@@ -181,8 +181,7 @@ def tokenize_regex(input: str) -> list[str]:
     tokens = []
 
     while input:
-        m = p.match(input)
-        if m:
+        if m := p.match(input):
             token, input = input[: m.end()], input[m.end() :]
             if not token.isspace():
                 tokens.append(token)
@@ -201,21 +200,17 @@ def parse_regex(regex_tokens: list[str]) -> Node:
 
     def wrap(lst: list[Node]) -> Node:
         """Turn list into sequence when it contains several items."""
-        if len(lst) == 1:
-            return lst[0]
-        else:
-            return NodeSequence(lst)
+        return lst[0] if len(lst) == 1 else NodeSequence(lst)
 
     def _parse() -> Node:
         or_list: list[list[Node]] = []
         result: list[Node] = []
 
         def wrapped_result() -> Node:
-            if or_list == []:
+            if not or_list:
                 return wrap(result)
-            else:
-                or_list.append(result)
-                return AnyNode([wrap(i) for i in or_list])
+            or_list.append(result)
+            return AnyNode([wrap(i) for i in or_list])
 
         while tokens:
             t = tokens.pop()
@@ -234,12 +229,11 @@ def parse_regex(regex_tokens: list[str]) -> Node:
 
             elif t in ("?", "??"):
                 if result == []:
-                    raise Exception("Nothing to repeat." + repr(tokens))
-                else:
-                    greedy = t == "?"
-                    result[-1] = Repeat(
-                        result[-1], min_repeat=0, max_repeat=1, greedy=greedy
-                    )
+                    raise Exception(f"Nothing to repeat.{repr(tokens)}")
+                greedy = t == "?"
+                result[-1] = Repeat(
+                    result[-1], min_repeat=0, max_repeat=1, greedy=greedy
+                )
 
             elif t == "|":
                 or_list.append(result)
@@ -276,7 +270,7 @@ def parse_regex(regex_tokens: list[str]) -> Node:
 
     result = _parse()
 
-    if len(tokens) != 0:
+    if tokens:
         raise Exception("Unmatched parentheses.")
     else:
         return result

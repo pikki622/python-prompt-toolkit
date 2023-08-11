@@ -54,7 +54,7 @@ E = KeyPressEvent
 
 ascii_lowercase = string.ascii_lowercase
 
-vi_register_names = ascii_lowercase + "0123456789"
+vi_register_names = f"{ascii_lowercase}0123456789"
 
 
 class TextObjectType(Enum):

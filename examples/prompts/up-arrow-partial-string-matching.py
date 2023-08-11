@@ -34,7 +34,7 @@ def main():
         else:
             break
 
-    print("You said: %s" % text)
+    print(f"You said: {text}")
 
 
 if __name__ == "__main__":

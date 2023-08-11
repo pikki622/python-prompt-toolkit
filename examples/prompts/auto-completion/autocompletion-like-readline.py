@@ -51,7 +51,7 @@ def main():
         completer=animal_completer,
         complete_style=CompleteStyle.READLINE_LIKE,
     )
-    print("You said: %s" % text)
+    print(f"You said: {text}")
 
 
 if __name__ == "__main__":

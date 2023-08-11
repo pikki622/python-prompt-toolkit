@@ -63,7 +63,7 @@ def main():
     text = prompt(
         "> ", default="hello world", key_bindings=bindings, editing_mode=EditingMode.VI
     )
-    print("You said: %s" % text)
+    print(f"You said: {text}")
 
 
 if __name__ == "__main__":

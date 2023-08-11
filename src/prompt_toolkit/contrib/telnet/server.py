@@ -99,7 +99,7 @@ class _ConnectionStdout:
             if not self._closed:
                 self._connection.send(b"".join(self._buffer))
         except OSError as e:
-            logger.warning("Couldn't send data over socket: %s" % e)
+            logger.warning(f"Couldn't send data over socket: {e}")
 
         self._buffer = []
 
@@ -414,7 +414,7 @@ class TelnetServer:
                 # Unhandled control-c propagated by a prompt.
                 logger.info("Unhandled KeyboardInterrupt in telnet application.")
             except BaseException as e:
-                print("Got %s" % type(e).__name__, e)
+                print(f"Got {type(e).__name__}", e)
                 import traceback
 
                 traceback.print_exc()

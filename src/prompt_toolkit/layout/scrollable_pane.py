@@ -411,14 +411,10 @@ class ScrollablePane(Container):
             min_scroll = max(min_scroll, window_min_scroll)
             max_scroll = min(max_scroll, window_max_scroll)
 
-        if min_scroll > max_scroll:
-            min_scroll = max_scroll  # Should not happen.
-
+        min_scroll = min(min_scroll, max_scroll)
         # Finally, properly clip the vertical scroll.
-        if self.vertical_scroll > max_scroll:
-            self.vertical_scroll = max_scroll
-        if self.vertical_scroll < min_scroll:
-            self.vertical_scroll = min_scroll
+        self.vertical_scroll = min(self.vertical_scroll, max_scroll)
+        self.vertical_scroll = max(self.vertical_scroll, min_scroll)
 
     def _draw_scrollbar(
         self, write_position: WritePosition, content_height: int, screen: Screen

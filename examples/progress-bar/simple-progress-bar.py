@@ -10,7 +10,7 @@ from prompt_toolkit.shortcuts import ProgressBar
 
 def main():
     with ProgressBar() as pb:
-        for i in pb(range(800)):
+        for _ in pb(range(800)):
             time.sleep(0.01)
 
 

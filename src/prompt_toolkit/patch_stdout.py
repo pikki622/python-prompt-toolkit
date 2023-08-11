@@ -158,9 +158,7 @@ class StdoutProxy:
             if not item:
                 continue
 
-            text = []
-            text.append(item)
-
+            text = [item]
             # Read the rest of the queue if more data was queued up.
             while True:
                 try:
@@ -189,10 +187,7 @@ class StdoutProxy:
         """
         app = self.app_session.app
 
-        if app is None:
-            return None
-
-        return app.loop
+        return None if app is None else app.loop
 
     def _write_and_flush(
         self, loop: asyncio.AbstractEventLoop | None, text: str
@@ -275,10 +270,7 @@ class StdoutProxy:
 
     def isatty(self) -> bool:
         stdout = self._output.stdout
-        if stdout is None:
-            return False
-
-        return stdout.isatty()
+        return False if stdout is None else stdout.isatty()
 
     @property
     def encoding(self) -> str:

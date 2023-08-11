@@ -28,8 +28,8 @@ class ColorCompleter(Completer):
                 yield Completion(
                     color,
                     start_position=-len(word),
-                    style="fg:" + color,
-                    selected_style="fg:white bg:" + color,
+                    style=f"fg:{color}",
+                    selected_style=f"fg:white bg:{color}",
                 )
 
 

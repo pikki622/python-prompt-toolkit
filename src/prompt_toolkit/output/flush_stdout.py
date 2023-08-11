@@ -41,15 +41,7 @@ def flush_stdout(stdout: TextIO, data: str) -> None:
             # resize signal. (Just ignore. The resize handler will render
             # again anyway.)
             pass
-        elif e.args and e.args[0] == 0:
-            # This can happen when there is a lot of output and the user
-            # sends a KeyboardInterrupt by pressing Control-C. E.g. in
-            # a Python REPL when we execute "while True: print('test')".
-            # (The `ptpython` REPL uses this `Output` class instead of
-            # `stdout` directly -- in order to be network transparent.)
-            # So, just ignore.
-            pass
-        else:
+        elif not e.args or e.args[0] != 0:
             raise
 
 

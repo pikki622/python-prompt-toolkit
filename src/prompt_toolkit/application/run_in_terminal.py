@@ -46,10 +46,7 @@ def run_in_terminal(
 
     async def run() -> _T:
         async with in_terminal(render_cli_done=render_cli_done):
-            if in_executor:
-                return await run_in_executor_with_context(func)
-            else:
-                return func()
+            return await run_in_executor_with_context(func) if in_executor else func()
 
     return ensure_future(run())
 

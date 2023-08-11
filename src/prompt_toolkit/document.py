@@ -335,10 +335,7 @@ class Document:
 
         result += max(0, min(col, len(line)))
 
-        # Keep in range. (len(self.text) is included, because the cursor can be
-        # right after the end of the text as well.)
-        result = max(0, min(result, len(self.text)))
-        return result
+        return max(0, min(result, len(self.text)))
 
     @property
     def is_cursor_at_the_end(self) -> bool:
@@ -389,10 +386,7 @@ class Document:
         try:
             for i, match in enumerate(iterator):
                 if i + 1 == count:
-                    if include_current_position:
-                        return match.start(0)
-                    else:
-                        return match.start(0) + 1
+                    return match.start(0) if include_current_position else match.start(0) + 1
         except StopIteration:
             pass
         return None
@@ -529,7 +523,7 @@ class Document:
         if not WORD and match_before and match_after:
             c1 = self.text[self.cursor_position - 1]
             c2 = self.text[self.cursor_position]
-            alphabet = string.ascii_letters + "0123456789_"
+            alphabet = f"{string.ascii_letters}0123456789_"
 
             if (c1 in alphabet) != (c2 in alphabet):
                 match_before = None
@@ -595,11 +589,7 @@ class Document:
                 if i + 1 == count:
                     value = match.end(1)
 
-                    if include_current_position:
-                        return value
-                    else:
-                        return value + 1
-
+                    return value if include_current_position else value + 1
         except StopIteration:
             pass
         return None
@@ -762,11 +752,7 @@ class Document:
         if self.current_char == right_ch:
             return 0
 
-        if end_pos is None:
-            end_pos = len(self.text)
-        else:
-            end_pos = min(len(self.text), end_pos)
-
+        end_pos = len(self.text) if end_pos is None else min(len(self.text), end_pos)
         stack = 1
 
         # Look forward.
@@ -795,11 +781,7 @@ class Document:
         if self.current_char == left_ch:
             return 0
 
-        if start_pos is None:
-            start_pos = 0
-        else:
-            start_pos = max(0, start_pos)
-
+        start_pos = 0 if start_pos is None else max(0, start_pos)
         stack = 1
 
         # Look backward.
@@ -846,15 +828,14 @@ class Document:
 
     def get_start_of_line_position(self, after_whitespace: bool = False) -> int:
         """Relative position for the start of this line."""
-        if after_whitespace:
-            current_line = self.current_line
-            return (
-                len(current_line)
-                - len(current_line.lstrip())
-                - self.cursor_position_col
-            )
-        else:
+        if not after_whitespace:
             return -len(self.current_line_before_cursor)
+        current_line = self.current_line
+        return (
+            len(current_line)
+            - len(current_line.lstrip())
+            - self.cursor_position_col
+        )
 
     def get_end_of_line_position(self) -> int:
         """Relative position for the end of this line."""
@@ -908,46 +889,47 @@ class Document:
         This will return zero ranges, like (8,8) for empty lines in a block
         selection.
         """
-        if self.selection:
-            from_, to = sorted(
-                [self.cursor_position, self.selection.original_cursor_position]
-            )
+        if not self.selection:
+            return
+        from_, to = sorted(
+            [self.cursor_position, self.selection.original_cursor_position]
+        )
 
-            if self.selection.type == SelectionType.BLOCK:
-                from_line, from_column = self.translate_index_to_position(from_)
-                to_line, to_column = self.translate_index_to_position(to)
-                from_column, to_column = sorted([from_column, to_column])
-                lines = self.lines
+        if self.selection.type == SelectionType.BLOCK:
+            from_line, from_column = self.translate_index_to_position(from_)
+            to_line, to_column = self.translate_index_to_position(to)
+            from_column, to_column = sorted([from_column, to_column])
+            lines = self.lines
 
-                if vi_mode():
-                    to_column += 1
+            if vi_mode():
+                to_column += 1
 
-                for l in range(from_line, to_line + 1):
-                    line_length = len(lines[l])
+            for l in range(from_line, to_line + 1):
+                line_length = len(lines[l])
 
-                    if from_column <= line_length:
-                        yield (
-                            self.translate_row_col_to_index(l, from_column),
-                            self.translate_row_col_to_index(
-                                l, min(line_length, to_column)
-                            ),
-                        )
-            else:
-                # In case of a LINES selection, go to the start/end of the lines.
-                if self.selection.type == SelectionType.LINES:
-                    from_ = max(0, self.text.rfind("\n", 0, from_) + 1)
+                if from_column <= line_length:
+                    yield (
+                        self.translate_row_col_to_index(l, from_column),
+                        self.translate_row_col_to_index(
+                            l, min(line_length, to_column)
+                        ),
+                    )
+        else:
+            # In case of a LINES selection, go to the start/end of the lines.
+            if self.selection.type == SelectionType.LINES:
+                from_ = max(0, self.text.rfind("\n", 0, from_) + 1)
 
-                    if self.text.find("\n", to) >= 0:
-                        to = self.text.find("\n", to)
-                    else:
-                        to = len(self.text) - 1
+                if self.text.find("\n", to) >= 0:
+                    to = self.text.find("\n", to)
+                else:
+                    to = len(self.text) - 1
 
-                # In Vi mode, the upper boundary is always included. For Emacs,
-                # that's not the case.
-                if vi_mode():
-                    to += 1
+            # In Vi mode, the upper boundary is always included. For Emacs,
+            # that's not the case.
+            if vi_mode():
+                to += 1
 
-                yield from_, to
+            yield from_, to
 
     def selection_range_at_line(self, row: int) -> tuple[int, int] | None:
         """
@@ -1005,35 +987,34 @@ class Document:
         document represents the new document when the selection is cut, and the
         clipboard data, represents whatever has to be put on the clipboard.
         """
-        if self.selection:
-            cut_parts = []
-            remaining_parts = []
-            new_cursor_position = self.cursor_position
-
-            last_to = 0
-            for from_, to in self.selection_ranges():
-                if last_to == 0:
-                    new_cursor_position = from_
-
-                remaining_parts.append(self.text[last_to:from_])
-                cut_parts.append(self.text[from_:to])
-                last_to = to
-
-            remaining_parts.append(self.text[last_to:])
-
-            cut_text = "\n".join(cut_parts)
-            remaining_text = "".join(remaining_parts)
-
-            # In case of a LINES selection, don't include the trailing newline.
-            if self.selection.type == SelectionType.LINES and cut_text.endswith("\n"):
-                cut_text = cut_text[:-1]
-
-            return (
-                Document(text=remaining_text, cursor_position=new_cursor_position),
-                ClipboardData(cut_text, self.selection.type),
-            )
-        else:
+        if not self.selection:
             return self, ClipboardData("")
+        cut_parts = []
+        remaining_parts = []
+        new_cursor_position = self.cursor_position
+
+        last_to = 0
+        for from_, to in self.selection_ranges():
+            if last_to == 0:
+                new_cursor_position = from_
+
+            remaining_parts.append(self.text[last_to:from_])
+            cut_parts.append(self.text[from_:to])
+            last_to = to
+
+        remaining_parts.append(self.text[last_to:])
+
+        cut_text = "\n".join(cut_parts)
+        remaining_text = "".join(remaining_parts)
+
+        # In case of a LINES selection, don't include the trailing newline.
+        if self.selection.type == SelectionType.LINES and cut_text.endswith("\n"):
+            cut_text = cut_text[:-1]
+
+        return (
+            Document(text=remaining_text, cursor_position=new_cursor_position),
+            ClipboardData(cut_text, self.selection.type),
+        )
 
     def paste_clipboard_data(
         self,
@@ -1071,13 +1052,11 @@ class Document:
             l = self.cursor_position_row
             if before:
                 lines = self.lines[:l] + [data.text] * count + self.lines[l:]
-                new_text = "\n".join(lines)
                 new_cursor_position = len("".join(self.lines[:l])) + l
             else:
                 lines = self.lines[: l + 1] + [data.text] * count + self.lines[l + 1 :]
                 new_cursor_position = len("".join(self.lines[: l + 1])) + l + 1
-                new_text = "\n".join(lines)
-
+            new_text = "\n".join(lines)
         elif data.type == SelectionType.BLOCK:
             lines = self.lines[:]
             start_line = self.cursor_position_row

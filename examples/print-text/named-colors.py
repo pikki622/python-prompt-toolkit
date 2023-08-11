@@ -11,7 +11,7 @@ print = print_formatted_text
 
 
 def main():
-    tokens = FormattedText([("fg:" + name, name + "  ") for name in NAMED_COLORS])
+    tokens = FormattedText([(f"fg:{name}", f"{name}  ") for name in NAMED_COLORS])
 
     print(HTML("\n<u>Named colors, using 16 color output.</u>"))
     print("(Note that it doesn't really make sense to use named colors ")

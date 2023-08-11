@@ -372,7 +372,7 @@ class HSplit(_Split):
             to which the output has to be written.
         """
         sizes = self._divide_heights(write_position)
-        style = parent_style + " " + to_str(self.style)
+        style = f"{parent_style} {to_str(self.style)}"
         z_index = z_index if self.z_index is None else self.z_index
 
         if sizes is None:
@@ -559,16 +559,15 @@ class VSplit(_Split):
         # wrap lines because of the smaller width returned by `_divide_widths`.
 
         sizes = self._divide_widths(width)
-        children = self._all_children
-
         if sizes is None:
             return Dimension()
-        else:
-            dimensions = [
-                c.preferred_height(s, max_available_height)
-                for s, c in zip(sizes, children)
-            ]
-            return max_layout_dimensions(dimensions)
+        children = self._all_children
+
+        dimensions = [
+            c.preferred_height(s, max_available_height)
+            for s, c in zip(sizes, children)
+        ]
+        return max_layout_dimensions(dimensions)
 
     def reset(self) -> None:
         for c in self.children:
@@ -679,7 +678,7 @@ class VSplit(_Split):
 
         children = self._all_children
         sizes = self._divide_widths(write_position.width)
-        style = parent_style + " " + to_str(self.style)
+        style = f"{parent_style} {to_str(self.style)}"
         z_index = z_index if self.z_index is None else self.z_index
 
         # If there is not enough space.
@@ -792,7 +791,7 @@ class FloatContainer(Container):
         erase_bg: bool,
         z_index: int | None,
     ) -> None:
-        style = parent_style + " " + to_str(self.style)
+        style = f"{parent_style} {to_str(self.style)}"
         z_index = z_index if self.z_index is None else self.z_index
 
         self.content.write_to_screen(
@@ -803,7 +802,7 @@ class FloatContainer(Container):
             # z_index of a Float is computed by summing the z_index of the
             # container and the `Float`.
             new_z_index = (z_index or 0) + fl.z_index
-            style = parent_style + " " + to_str(self.style)
+            style = f"{parent_style} {to_str(self.style)}"
 
             # If the float that we have here, is positioned relative to the
             # cursor position, but the Window that specifies the cursor
@@ -1081,14 +1080,10 @@ class Float:
         self.transparent = to_filter(transparent)
 
     def get_width(self) -> int | None:
-        if callable(self.width):
-            return self.width()
-        return self.width
+        return self.width() if callable(self.width) else self.width
 
     def get_height(self) -> int | None:
-        if callable(self.height):
-            return self.height()
-        return self.height
+        return self.height() if callable(self.height) else self.height
 
     def __repr__(self) -> str:
         return "Float(content=%r)" % self.content
@@ -1219,10 +1214,7 @@ class WindowRenderInfo:
         """
         result: dict[int, int] = {}
         for k, v in self.visible_line_to_input_line.items():
-            if v in result:
-                result[v] = min(result[v], k)
-            else:
-                result[v] = k
+            result[v] = min(result[v], k) if v in result else k
         return result
 
     def first_visible_line(self, after_scroll_offset: bool = False) -> int:
@@ -1678,9 +1670,7 @@ class Window(Container):
         if app.quoted_insert:
             return "^"
         if app.vi_state.waiting_for_digraph:
-            if app.vi_state.digraph_symbol1:
-                return app.vi_state.digraph_symbol1
-            return "?"
+            return app.vi_state.digraph_symbol1 if app.vi_state.digraph_symbol1 else "?"
         return None
 
     def write_to_screen(
@@ -1961,22 +1951,18 @@ class Window(Container):
         rowcol_to_yx: dict[tuple[int, int], tuple[int, int]] = {}
 
         def copy_line(
-            line: StyleAndTextTuples,
-            lineno: int,
-            x: int,
-            y: int,
-            is_input: bool = False,
-        ) -> tuple[int, int]:
+                line: StyleAndTextTuples,
+                lineno: int,
+                x: int,
+                y: int,
+                is_input: bool = False,
+            ) -> tuple[int, int]:
             """
             Copy over a single line to the output screen. This can wrap over
             multiple lines in the output. It will call the prefix (prompt)
             function before every line.
             """
-            if is_input:
-                current_rowcol_to_yx = rowcol_to_yx
-            else:
-                current_rowcol_to_yx = {}  # Throwaway dictionary.
-
+            current_rowcol_to_yx = rowcol_to_yx if is_input else {}
             # Draw line prefix.
             if is_input and get_line_prefix:
                 prompt = to_formatted_text(get_line_prefix(lineno, 0))
@@ -2173,11 +2159,7 @@ class Window(Container):
         (Useful for floats and when a `char` has been given.)
         """
         char: str | None
-        if callable(self.char):
-            char = self.char()
-        else:
-            char = self.char
-
+        char = self.char() if callable(self.char) else self.char
         if erase_bg or char:
             wp = write_position
             char_obj = _CHAR_CACHE[char or " ", ""]
@@ -2191,7 +2173,7 @@ class Window(Container):
         self, new_screen: Screen, write_position: WritePosition, parent_style: str
     ) -> None:
         # Apply `self.style`.
-        style = parent_style + " " + to_str(self.style)
+        style = f"{parent_style} {to_str(self.style)}"
 
         new_screen.fill_area(write_position, style=style, after=False)
 
@@ -2210,8 +2192,7 @@ class Window(Container):
         When we are in Vi digraph mode, put a question mark underneath the
         cursor.
         """
-        digraph_char = self._get_digraph_char()
-        if digraph_char:
+        if digraph_char := self._get_digraph_char():
             cpos = new_screen.get_cursor_position(self)
             new_screen.data_buffer[cpos.y][cpos.x] = _CHAR_CACHE[
                 digraph_char, "class:digraph"
@@ -2246,14 +2227,12 @@ class Window(Container):
         """
         Highlight cursor row/column.
         """
-        cursor_line_style = " class:cursor-line "
-        cursor_column_style = " class:cursor-column "
-
         data_buffer = new_screen.data_buffer
 
         # Highlight cursor line.
         if self.cursorline():
             row = data_buffer[cpos.y]
+            cursor_line_style = " class:cursor-line "
             for x in range(x, x + width):
                 original_char = row[x]
                 row[x] = _CHAR_CACHE[
@@ -2262,6 +2241,8 @@ class Window(Container):
 
         # Highlight cursor column.
         if self.cursorcolumn():
+            cursor_column_style = " class:cursor-column "
+
             for y2 in range(y, y + height):
                 row = data_buffer[y2]
                 original_char = row[cpos.x]
@@ -2279,7 +2260,7 @@ class Window(Container):
             column = cc.position
 
             if column < x + width:  # Only draw when visible.
-                color_column_style = " " + cc.style
+                color_column_style = f" {cc.style}"
 
                 for y2 in range(y, y + height):
                     row = data_buffer[y2]

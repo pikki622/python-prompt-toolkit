@@ -18,7 +18,7 @@ def data():
 
 def main():
     with ProgressBar() as pb:
-        for i in pb(data()):
+        for _ in pb(data()):
             time.sleep(0.1)
 
 

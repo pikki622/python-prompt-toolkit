@@ -22,7 +22,7 @@ class RainbowLexer(Lexer):
 
 def main():
     answer = prompt("Give me some input: ", lexer=RainbowLexer())
-    print("You said: %s" % answer)
+    print(f"You said: {answer}")
 
 
 if __name__ == "__main__":

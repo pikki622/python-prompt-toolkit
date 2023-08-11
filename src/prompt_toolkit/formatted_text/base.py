@@ -93,16 +93,13 @@ def to_formatted_text(
     if style:
         result = cast(
             StyleAndTextTuples,
-            [(style + " " + item_style, *rest) for item_style, *rest in result],
+            [(f"{style} {item_style}", *rest) for item_style, *rest in result],
         )
 
     # Make sure the result is wrapped in a `FormattedText`. Among other
     # reasons, this is important for `print_formatted_text` to work correctly
     # and distinguish between lists and formatted text.
-    if isinstance(result, FormattedText):
-        return result
-    else:
-        return FormattedText(result)
+    return result if isinstance(result, FormattedText) else FormattedText(result)
 
 
 def is_formatted_text(value: object) -> TypeGuard[AnyFormattedText]:
@@ -115,9 +112,7 @@ def is_formatted_text(value: object) -> TypeGuard[AnyFormattedText]:
         return True
     if isinstance(value, (str, list)):
         return True
-    if hasattr(value, "__pt_formatted_text__"):
-        return True
-    return False
+    return bool(hasattr(value, "__pt_formatted_text__"))
 
 
 class FormattedText(StyleAndTextTuples):
@@ -132,7 +127,7 @@ class FormattedText(StyleAndTextTuples):
         return self
 
     def __repr__(self) -> str:
-        return "FormattedText(%s)" % super().__repr__()
+        return f"FormattedText({super().__repr__()})"
 
 
 class Template:

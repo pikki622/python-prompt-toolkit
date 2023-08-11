@@ -90,17 +90,13 @@ class RegexSync(SyntaxSync):
         # Scan upwards, until we find a point where we can start the syntax
         # synchronisation.
         for i in range(lineno, max(-1, lineno - self.MAX_BACKWARDS), -1):
-            match = pattern.match(lines[i])
-            if match:
+            if match := pattern.match(lines[i]):
                 return i, match.start()
 
         # No synchronisation point found. If we aren't that far from the
         # beginning, start at the very beginning, otherwise, just try to start
         # at the current line.
-        if lineno < self.FROM_START_IF_NO_SYNC_POS_FOUND:
-            return 0, 0
-        else:
-            return lineno, 0
+        return (0, 0) if lineno < self.FROM_START_IF_NO_SYNC_POS_FOUND else (lineno, 0)
 
     @classmethod
     def from_pygments_lexer_cls(cls, lexer_cls: PygmentsLexerCls) -> RegexSync:
@@ -131,7 +127,7 @@ class _TokenCache(Dict[Tuple[str, ...], str]):
     """
 
     def __missing__(self, key: tuple[str, ...]) -> str:
-        result = "class:" + pygments_token_to_classname(key)
+        result = f"class:{pygments_token_to_classname(key)}"
         self[key] = result
         return result
 
@@ -229,10 +225,7 @@ class PygmentsLexer(Lexer):
 
         def get_syntax_sync() -> SyntaxSync:
             "The Syntax synchronisation object that we currently use."
-            if self.sync_from_start():
-                return SyncFromStart()
-            else:
-                return self.syntax_sync
+            return SyncFromStart() if self.sync_from_start() else self.syntax_sync
 
         def find_closest_generator(i: int) -> LineGenerator | None:
             "Return a generator close to line 'i', or None if none was found."

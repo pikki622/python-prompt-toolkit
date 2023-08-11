@@ -83,7 +83,7 @@ class NumberedMargin(Margin):
 
     def get_width(self, get_ui_content: Callable[[], UIContent]) -> int:
         line_count = get_ui_content().line_count
-        return max(3, len("%s" % line_count) + 1)
+        return max(3, len(f"{line_count}") + 1)
 
     def create_margin(
         self, window_render_info: WindowRenderInfo, width: int, height: int
@@ -143,10 +143,7 @@ class ConditionalMargin(Margin):
         self.filter = to_filter(filter)
 
     def get_width(self, get_ui_content: Callable[[], UIContent]) -> int:
-        if self.filter():
-            return self.margin.get_width(get_ui_content)
-        else:
-            return 0
+        return self.margin.get_width(get_ui_content) if self.filter() else 0
 
     def create_margin(
         self, window_render_info: WindowRenderInfo, width: int, height: int

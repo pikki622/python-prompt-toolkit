@@ -278,10 +278,8 @@ class raw_mode:
 
     def __exit__(self, *a: object) -> None:
         if self.attrs_before is not None:
-            try:
+            with contextlib.suppress(termios.error):
                 termios.tcsetattr(self.fileno, termios.TCSANOW, self.attrs_before)
-            except termios.error:
-                pass
 
             # # Put the terminal in application mode.
             # self._stdout.write('\x1b[?1h')

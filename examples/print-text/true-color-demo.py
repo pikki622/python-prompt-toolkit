@@ -21,10 +21,7 @@ def main():
         "bg:#00{0:02x}{0:02x}",  # Cyan.
         "bg:#{0:02x}{0:02x}{0:02x}",  # Gray.
     ]:
-        fragments = []
-        for i in range(0, 256, 4):
-            fragments.append((template.format(i), " "))
-
+        fragments = [(template.format(i), " ") for i in range(0, 256, 4)]
         print(FormattedText(fragments), color_depth=ColorDepth.DEPTH_4_BIT)
         print(FormattedText(fragments), color_depth=ColorDepth.DEPTH_8_BIT)
         print(FormattedText(fragments), color_depth=ColorDepth.DEPTH_24_BIT)

@@ -280,8 +280,8 @@ class MenuContainer:
                         selected_item = -1
 
                     def one_item(
-                        i: int, item: MenuItem
-                    ) -> Iterable[OneStyleAndTextTuple]:
+                                        i: int, item: MenuItem
+                                    ) -> Iterable[OneStyleAndTextTuple]:
                         def mouse_handler(mouse_event: MouseEvent) -> None:
                             if item.disabled:
                                 # The arrow keys can't interact with menu items that are disabled.
@@ -310,7 +310,7 @@ class MenuContainer:
                         yield ("class:menu", Border.VERTICAL)
                         if item.text == "-":
                             yield (
-                                style + "class:menu-border",
+                                f"{style}class:menu-border",
                                 f"{Border.HORIZONTAL * (menu.width + 3)}",
                                 mouse_handler,
                             )
@@ -368,7 +368,4 @@ class MenuItem:
 
     @property
     def width(self) -> int:
-        if self.children:
-            return max(get_cwidth(c.text) for c in self.children)
-        else:
-            return 0
+        return max(get_cwidth(c.text) for c in self.children) if self.children else 0

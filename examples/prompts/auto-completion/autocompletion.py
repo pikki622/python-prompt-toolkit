@@ -53,7 +53,7 @@ def main():
     text = prompt(
         "Give some animals: ", completer=animal_completer, complete_while_typing=False
     )
-    print("You said: %s" % text)
+    print(f"You said: {text}")
 
 
 if __name__ == "__main__":

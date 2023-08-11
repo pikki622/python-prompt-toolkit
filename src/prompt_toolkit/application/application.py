@@ -344,10 +344,7 @@ class Application(Generic[_AppResult]):
 
         @DynamicStyle
         def conditional_pygments_style() -> BaseStyle:
-            if include_default_pygments_style():
-                return pygments_style
-            else:
-                return dummy_style
+            return pygments_style if include_default_pygments_style() else dummy_style
 
         return merge_styles(
             [
@@ -506,29 +503,30 @@ class Application(Generic[_AppResult]):
 
         def run_in_context() -> None:
             # Only draw when no sub application was started.
-            if self._is_running and not self._running_in_terminal:
-                if self.min_redraw_interval:
-                    self._last_redraw_time = time.time()
+            if not self._is_running or self._running_in_terminal:
+                return
+            if self.min_redraw_interval:
+                self._last_redraw_time = time.time()
 
-                # Render
-                self.render_counter += 1
-                self.before_render.fire()
+            # Render
+            self.render_counter += 1
+            self.before_render.fire()
 
-                if render_as_done:
-                    if self.erase_when_done:
-                        self.renderer.erase()
-                    else:
-                        # Draw in 'done' state and reset renderer.
-                        self.renderer.render(self, self.layout, is_done=render_as_done)
+            if render_as_done:
+                if self.erase_when_done:
+                    self.renderer.erase()
                 else:
-                    self.renderer.render(self, self.layout)
+                    # Draw in 'done' state and reset renderer.
+                    self.renderer.render(self, self.layout, is_done=render_as_done)
+            else:
+                self.renderer.render(self, self.layout)
 
-                self.layout.update_parents_relations()
+            self.layout.update_parents_relations()
 
-                # Fire render event.
-                self.after_render.fire()
+            # Fire render event.
+            self.after_render.fire()
 
-                self._update_invalidate_events()
+            self._update_invalidate_events()
 
         # NOTE: We want to make sure this Application is the active one. The
         #       invalidate function is often called from a context where this
@@ -1367,18 +1365,14 @@ class Application(Generic[_AppResult]):
 
     @property
     def is_done(self) -> bool:
-        if self.future:
-            return self.future.done()
-        return False
+        return self.future.done() if self.future else False
 
     def get_used_style_strings(self) -> list[str]:
         """
         Return a list of used style strings. This is helpful for debugging, and
         for writing a new `Style`.
         """
-        attrs_for_style = self.renderer._attrs_for_style
-
-        if attrs_for_style:
+        if attrs_for_style := self.renderer._attrs_for_style:
             return sorted(
                 re.sub(r"\s+", " ", style_str).strip()
                 for style_str in attrs_for_style.keys()
@@ -1451,15 +1445,15 @@ class _CombinedRegistry(KeyBindingsBase):
         if self.app.key_bindings:
             key_bindings.append(self.app.key_bindings)
 
-        # Add mouse bindings.
-        key_bindings.append(
-            ConditionalKeyBindings(
-                self.app._page_navigation_bindings,
-                self.app.enable_page_navigation_bindings,
+        key_bindings.extend(
+            (
+                ConditionalKeyBindings(
+                    self.app._page_navigation_bindings,
+                    self.app.enable_page_navigation_bindings,
+                ),
+                self.app._default_bindings,
             )
         )
-        key_bindings.append(self.app._default_bindings)
-
         # Reverse this list. The current control's key bindings should come
         # last. They need priority.
         key_bindings = key_bindings[::-1]
@@ -1501,7 +1495,6 @@ async def _do_wait_for_enter(wait_text: AnyFormattedText) -> None:
     @key_bindings.add(Keys.Any)
     def _ignore(event: E) -> None:
         "Disallow typing."
-        pass
 
     session: PromptSession[None] = PromptSession(
         message=wait_text, key_bindings=key_bindings

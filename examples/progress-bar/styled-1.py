@@ -26,9 +26,9 @@ style = Style.from_dict(
 
 def main():
     with ProgressBar(
-        style=style, title="Progress bar example with custom styling."
-    ) as pb:
-        for i in pb(range(1600), label="Downloading..."):
+            style=style, title="Progress bar example with custom styling."
+        ) as pb:
+        for _ in pb(range(1600), label="Downloading..."):
             time.sleep(0.01)
 
 

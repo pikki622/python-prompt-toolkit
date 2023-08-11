@@ -71,9 +71,7 @@ class FuzzyCompleter(Completer):
     def _get_pattern(self) -> str:
         if self.pattern:
             return self.pattern
-        if self.WORD:
-            return r"[^\s]+"
-        return "^[a-zA-Z0-9_]*"
+        return r"[^\s]+" if self.WORD else "^[a-zA-Z0-9_]*"
 
     def _get_fuzzy_completions(
         self, document: Document, complete_event: CompleteEvent

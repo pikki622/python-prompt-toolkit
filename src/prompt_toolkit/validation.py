@@ -119,11 +119,7 @@ class _ValidatorFromCallable(Validator):
 
     def validate(self, document: Document) -> None:
         if not self.func(document.text):
-            if self.move_cursor_to_end:
-                index = len(document.text)
-            else:
-                index = 0
-
+            index = len(document.text) if self.move_cursor_to_end else 0
             raise ValidationError(cursor_position=index, message=self.error_message)
 
 

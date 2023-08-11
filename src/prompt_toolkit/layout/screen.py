@@ -108,11 +108,7 @@ class Char:
     def __init__(self, char: str = " ", style: str = "") -> None:
         # If this character has to be displayed otherwise, take that one.
         if char in self.display_mappings:
-            if char == "\xa0":
-                style += " class:nbsp "  # Will be underlined.
-            else:
-                style += " class:control-character "
-
+            style += " class:nbsp " if char == "\xa0" else " class:control-character "
             char = self.display_mappings[char]
 
         self.char = char
@@ -269,7 +265,7 @@ class Screen:
         b = self.data_buffer
         char_cache = _CHAR_CACHE
 
-        append_style = " " + style_str
+        append_style = f" {style_str}"
 
         for y, row in b.items():
             for x, char in row.items():
@@ -291,11 +287,11 @@ class Screen:
         data_buffer = self.data_buffer
 
         if after:
-            append_style = " " + style
+            append_style = f" {style}"
             prepend_style = ""
         else:
             append_style = ""
-            prepend_style = style + " "
+            prepend_style = f"{style} "
 
         for y in range(
             write_position.ypos, write_position.ypos + write_position.height

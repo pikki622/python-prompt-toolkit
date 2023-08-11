@@ -10,9 +10,9 @@ from prompt_toolkit.shortcuts import ProgressBar
 
 def main():
     with ProgressBar(
-        title="Scrolling task name (make sure the window is not too big)."
-    ) as pb:
-        for i in pb(
+            title="Scrolling task name (make sure the window is not too big)."
+        ) as pb:
+        for _ in pb(
             range(800),
             label="This is a very very very long task that requires horizontal scrolling ...",
         ):

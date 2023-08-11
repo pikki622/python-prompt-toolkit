@@ -30,30 +30,22 @@ class GrammarValidator(Validator):
         self.validators = validators
 
     def validate(self, document: Document) -> None:
-        # Parse input document.
-        # We use `match`, not `match_prefix`, because for validation, we want
-        # the actual, unambiguous interpretation of the input.
-        m = self.compiled_grammar.match(document.text)
-
-        if m:
-            for v in m.variables():
-                validator = self.validators.get(v.varname)
-
-                if validator:
-                    # Unescape text.
-                    unwrapped_text = self.compiled_grammar.unescape(v.varname, v.value)
-
-                    # Create a document, for the completions API (text/cursor_position)
-                    inner_document = Document(unwrapped_text, len(unwrapped_text))
-
-                    try:
-                        validator.validate(inner_document)
-                    except ValidationError as e:
-                        raise ValidationError(
-                            cursor_position=v.start + e.cursor_position,
-                            message=e.message,
-                        ) from e
-        else:
+        if not (m := self.compiled_grammar.match(document.text)):
             raise ValidationError(
                 cursor_position=len(document.text), message="Invalid command"
             )
+        for v in m.variables():
+            if validator := self.validators.get(v.varname):
+                # Unescape text.
+                unwrapped_text = self.compiled_grammar.unescape(v.varname, v.value)
+
+                # Create a document, for the completions API (text/cursor_position)
+                inner_document = Document(unwrapped_text, len(unwrapped_text))
+
+                try:
+                    validator.validate(inner_document)
+                except ValidationError as e:
+                    raise ValidationError(
+                        cursor_position=v.start + e.cursor_position,
+                        message=e.message,
+                    ) from e

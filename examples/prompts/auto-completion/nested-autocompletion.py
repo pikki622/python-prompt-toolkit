@@ -15,7 +15,7 @@ completer = NestedCompleter.from_nested_dict(
 
 def main():
     text = prompt("Type a command: ", completer=completer)
-    print("You said: %s" % text)
+    print(f"You said: {text}")
 
 
 if __name__ == "__main__":

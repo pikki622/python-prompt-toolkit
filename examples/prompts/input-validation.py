@@ -22,13 +22,13 @@ def main():
     text = prompt(
         "Enter e-mail address: ", validator=validator, validate_while_typing=False
     )
-    print("You said: %s" % text)
+    print(f"You said: {text}")
 
     # While typing
     text = prompt(
         "Enter e-mail address: ", validator=validator, validate_while_typing=True
     )
-    print("You said: %s" % text)
+    print(f"You said: {text}")
 
 
 if __name__ == "__main__":

@@ -37,8 +37,8 @@ class PromptToolkitSSHSession(asyncssh.SSHServerSession):  # type: ignore
         self._input: PipeInput | None = None
         self._output: Vt100_Output | None = None
 
-        # Output object. Don't render to the real stdout, but write everything
-        # in the SSH channel.
+
+
         class Stdout:
             def write(s, data: str) -> None:
                 try:
@@ -47,16 +47,17 @@ class PromptToolkitSSHSession(asyncssh.SSHServerSession):  # type: ignore
                 except BrokenPipeError:
                     pass  # Channel not open for sending.
 
-            def isatty(s) -> bool:
+            def isatty(self) -> bool:
                 return True
 
-            def flush(s) -> None:
+            def flush(self) -> None:
                 pass
 
             @property
             def encoding(s) -> str:
                 assert self._chan is not None
                 return str(self._chan._orig_chan.get_encoding()[0])
+
 
         self.stdout = cast(TextIO, Stdout())
 
@@ -66,9 +67,8 @@ class PromptToolkitSSHSession(asyncssh.SSHServerSession):  # type: ignore
         """
         if self._chan is None:
             return Size(rows=20, columns=79)
-        else:
-            width, height, pixwidth, pixheight = self._chan.get_terminal_size()
-            return Size(rows=height, columns=width)
+        width, height, pixwidth, pixheight = self._chan.get_terminal_size()
+        return Size(rows=height, columns=width)
 
     def connection_made(self, chan: Any) -> None:
         self._chan = chan

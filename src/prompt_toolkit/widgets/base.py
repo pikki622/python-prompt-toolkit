@@ -251,20 +251,14 @@ class TextArea:
         )
 
         if multiline:
-            if scrollbar:
-                right_margins = [ScrollbarMargin(display_arrows=True)]
-            else:
-                right_margins = []
-            if line_numbers:
-                left_margins = [NumberedMargin()]
-            else:
-                left_margins = []
+            right_margins = [ScrollbarMargin(display_arrows=True)] if scrollbar else []
+            left_margins = [NumberedMargin()] if line_numbers else []
         else:
             height = D.exact(1)
             left_margins = []
             right_margins = []
 
-        style = "class:text-area " + style
+        style = f"class:text-area {style}"
 
         # If no height was given, guarantee height of at least 1.
         if height is None:
@@ -371,7 +365,7 @@ class Label:
             content=self.formatted_text_control,
             width=get_width,
             height=D(min=1),
-            style="class:label " + style,
+            style=f"class:label {style}",
             dont_extend_height=dont_extend_height,
             dont_extend_width=dont_extend_width,
             align=align,
@@ -496,7 +490,7 @@ class Frame:
         self.body = body
 
         fill = partial(Window, style="class:frame.border")
-        style = "class:frame " + style
+        style = f"class:frame {style}"
 
         top_row_with_title = VSplit(
             [
@@ -711,7 +705,7 @@ class _DialogList(Generic[_T]):
         )
 
         # Cursor index: take first selected item or first item otherwise.
-        if len(self.current_values) > 0:
+        if self.current_values:
             self._selected_index = keys.index(self.current_values[0])
         else:
             self._selected_index = 0
@@ -807,9 +801,9 @@ class _DialogList(Generic[_T]):
 
             style = ""
             if checked:
-                style += " " + self.checked_style
+                style += f" {self.checked_style}"
             if selected:
-                style += " " + self.selected_style
+                style += f" {self.selected_style}"
 
             result.append((style, self.open_character))
 
@@ -857,11 +851,7 @@ class RadioList(_DialogList[_T]):
         values: Sequence[tuple[_T, AnyFormattedText]],
         default: _T | None = None,
     ) -> None:
-        if default is None:
-            default_values = None
-        else:
-            default_values = [default]
-
+        default_values = None if default is None else [default]
         super().__init__(values, default_values=default_values)
 
 
@@ -900,10 +890,7 @@ class Checkbox(CheckboxList[str]):
 
     @checked.setter
     def checked(self, value: bool) -> None:
-        if value:
-            self.current_values = ["value"]
-        else:
-            self.current_values = []
+        self.current_values = ["value"] if value else []
 
 
 class VerticalLine:
@@ -942,10 +929,6 @@ class ProgressBar:
         self.container = FloatContainer(
             content=Window(height=1),
             floats=[
-                # We first draw the label, then the actual progress bar.  Right
-                # now, this is the only way to have the colors of the progress
-                # bar appear on top of the label. The problem is that our label
-                # can't be part of any `Window` below.
                 Float(content=self.label, top=0, bottom=0),
                 Float(
                     left=0,
@@ -956,11 +939,13 @@ class ProgressBar:
                         [
                             Window(
                                 style="class:progress-bar.used",
-                                width=lambda: D(weight=int(self._percentage)),
+                                width=lambda: D(weight=self._percentage),
                             ),
                             Window(
                                 style="class:progress-bar",
-                                width=lambda: D(weight=int(100 - self._percentage)),
+                                width=lambda: D(
+                                    weight=int(100 - self._percentage)
+                                ),
                             ),
                         ]
                     ),

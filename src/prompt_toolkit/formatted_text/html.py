@@ -46,9 +46,9 @@ class HTML:
                 parts.append("class:" + ",".join(name_stack))
 
             if fg_stack:
-                parts.append("fg:" + fg_stack[-1])
+                parts.append(f"fg:{fg_stack[-1]}")
             if bg_stack:
-                parts.append("bg:" + bg_stack[-1])
+                parts.append(f"bg:{bg_stack[-1]}")
             return " ".join(parts)
 
         def process_node(node: Any) -> None:

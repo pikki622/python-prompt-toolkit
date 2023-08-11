@@ -51,10 +51,7 @@ def wait_for_handles(handles: list[HANDLE], timeout: int = INFINITE) -> HANDLE |
         len(handle_array), handle_array, BOOL(False), DWORD(timeout)
     )
 
-    if ret == WAIT_TIMEOUT:
-        return None
-    else:
-        return handles[ret]
+    return None if ret == WAIT_TIMEOUT else handles[ret]
 
 
 def create_win32_event() -> HANDLE:

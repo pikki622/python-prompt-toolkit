@@ -287,7 +287,7 @@ def progress_dialog(
     app = _create_app(dialog, style)
 
     def set_percentage(value: int) -> None:
-        progressbar.percentage = int(value)
+        progressbar.percentage = value
         app.invalidate()
 
     def log_text(text: str) -> None:

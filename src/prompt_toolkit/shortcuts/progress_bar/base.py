@@ -346,20 +346,19 @@ class ProgressBarCounter(Generic[_CounterItem]):
             self.total = total
 
     def __iter__(self) -> Iterator[_CounterItem]:
-        if self.data is not None:
-            try:
-                for item in self.data:
-                    yield item
-                    self.item_completed()
-
-                # Only done if we iterate to the very end.
-                self.done = True
-            finally:
-                # Ensure counter has stopped even if we did not iterate to the
-                # end (e.g. break or exceptions).
-                self.stopped = True
-        else:
+        if self.data is None:
             raise NotImplementedError("No data defined to iterate over.")
+        try:
+            for item in self.data:
+                yield item
+                self.item_completed()
+
+            # Only done if we iterate to the very end.
+            self.done = True
+        finally:
+            # Ensure counter has stopped even if we did not iterate to the
+            # end (e.g. break or exceptions).
+            self.stopped = True
 
     def item_completed(self) -> None:
         """

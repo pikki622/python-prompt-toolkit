@@ -76,7 +76,7 @@ def main():
             "Python >>> ", inputhook=inputhook, lexer=PygmentsLexer(PythonLexer)
         )
         result = session.prompt()
-    print("You said: %s" % result)
+    print(f"You said: {result}")
 
 
 if __name__ == "__main__":

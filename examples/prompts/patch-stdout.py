@@ -31,7 +31,7 @@ def main():
     # should not disturb anything.
     with patch_stdout():
         result = prompt("Say something: ")
-    print("You said: %s" % result)
+    print(f"You said: {result}")
 
     # Stop thread.
     running = False

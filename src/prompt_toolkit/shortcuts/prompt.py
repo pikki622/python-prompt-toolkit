@@ -497,13 +497,10 @@ class PromptSession(Generic[_T]):
 
         return Buffer(
             name=DEFAULT_BUFFER,
-            # Make sure that complete_while_typing is disabled when
-            # enable_history_search is enabled. (First convert to Filter,
-            # to avoid doing bitwise operations on bool objects.)
             complete_while_typing=Condition(
                 lambda: is_true(self.complete_while_typing)
                 and not is_true(self.enable_history_search)
-                and not self.complete_style == CompleteStyle.READLINE_LIKE
+                and self.complete_style != CompleteStyle.READLINE_LIKE
             ),
             validate_while_typing=dyncond("validate_while_typing"),
             enable_history_search=dyncond("enable_history_search"),
@@ -1304,13 +1301,12 @@ class PromptSession(Generic[_T]):
         Return whatever needs to be inserted before every line.
         (the prompt, or a line continuation.)
         """
-        # First line: display the "arg" or the prompt.
         if line_number == 0 and wrap_count == 0:
-            if not is_true(self.multiline) and get_app().key_processor.arg is not None:
-                return self._inline_arg()
-            else:
+            if is_true(self.multiline) or get_app().key_processor.arg is None:
                 return get_prompt_text_2()
 
+            else:
+                return self._inline_arg()
         # For the next lines, display the appropriate continuation.
         prompt_width = get_cwidth(fragment_list_to_text(get_prompt_text_2()))
         return self._get_continuation(prompt_width, line_number, wrap_count)
@@ -1332,14 +1328,13 @@ class PromptSession(Generic[_T]):
         app = get_app()
         if app.key_processor.arg is None:
             return []
-        else:
-            arg = app.key_processor.arg
+        arg = app.key_processor.arg
 
-            return [
-                ("class:prompt.arg", "(arg: "),
-                ("class:prompt.arg.text", str(arg)),
-                ("class:prompt.arg", ") "),
-            ]
+        return [
+            ("class:prompt.arg", "(arg: "),
+            ("class:prompt.arg.text", str(arg)),
+            ("class:prompt.arg", ") "),
+        ]
 
     # Expose the Input and Output objects as attributes, mainly for
     # backward-compatibility.
@@ -1478,7 +1473,6 @@ def create_confirm_session(
     @bindings.add(Keys.Any)
     def _(event: E) -> None:
         "Disallow inserting other text."
-        pass
 
     complete_message = merge_formatted_text([message, suffix])
     session: PromptSession[bool] = PromptSession(

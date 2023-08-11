@@ -43,7 +43,7 @@ def test_pathcompleter_completes_in_current_directory():
     doc = Document(doc_text, len(doc_text))
     event = CompleteEvent()
     completions = list(completer.get_completions(doc, event))
-    assert len(completions) > 0
+    assert completions
 
 
 def test_pathcompleter_completes_files_in_current_directory():
@@ -204,7 +204,7 @@ def test_pathcompleter_can_expanduser():
     doc = Document(doc_text, len(doc_text))
     event = CompleteEvent()
     completions = list(completer.get_completions(doc, event))
-    assert len(completions) > 0
+    assert completions
 
 
 def test_pathcompleter_can_apply_file_filter():
@@ -269,7 +269,7 @@ def test_word_completer_static_word_list():
     assert [c.text for c in completions] == ["abc", "aaa"]
 
     completions = completer.get_completions(Document("A"), CompleteEvent())
-    assert [c.text for c in completions] == []
+    assert not [c.text for c in completions]
 
     # Multiple words ending with space. (Accept all options)
     completions = completer.get_completions(Document("test "), CompleteEvent())
@@ -343,7 +343,7 @@ def test_word_completer_pattern():
     # Without pattern
     completer = WordCompleter(["abc", "a.b.c", "a.b", "xyz"])
     completions = completer.get_completions(Document("a."), CompleteEvent())
-    assert [c.text for c in completions] == []
+    assert not [c.text for c in completions]
 
 
 def test_fuzzy_completer():

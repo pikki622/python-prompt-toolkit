@@ -436,16 +436,10 @@ def get_common_complete_suffix(
 
 
 def _commonprefix(strings: Iterable[str]) -> str:
-    # Similar to os.path.commonprefix
     if not strings:
         return ""
 
-    else:
-        s1 = min(strings)
-        s2 = max(strings)
+    s1 = min(strings)
+    s2 = max(strings)
 
-        for i, c in enumerate(s1):
-            if c != s2[i]:
-                return s1[:i]
-
-        return s1
+    return next((s1[:i] for i, c in enumerate(s1) if c != s2[i]), s1)

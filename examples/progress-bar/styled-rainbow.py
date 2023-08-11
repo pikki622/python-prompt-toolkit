@@ -21,13 +21,9 @@ def main():
         formatters.Rainbow(formatters.TimeLeft()),
     ]
 
-    if true_color:
-        color_depth = ColorDepth.DEPTH_24_BIT
-    else:
-        color_depth = ColorDepth.DEPTH_8_BIT
-
+    color_depth = ColorDepth.DEPTH_24_BIT if true_color else ColorDepth.DEPTH_8_BIT
     with ProgressBar(formatters=custom_formatters, color_depth=color_depth) as pb:
-        for i in pb(range(20), label="Downloading..."):
+        for _ in pb(range(20), label="Downloading..."):
             time.sleep(1)
 
 

@@ -7,8 +7,7 @@ from prompt_toolkit.buffer import Buffer
 
 @pytest.fixture
 def _buffer():
-    buff = Buffer()
-    return buff
+    return Buffer()
 
 
 def test_initial(_buffer):

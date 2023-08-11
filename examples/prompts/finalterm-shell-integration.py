@@ -39,5 +39,5 @@ if __name__ == "__main__":
 
     # Output.
     sys.stdout.write(BEFORE_OUTPUT)
-    print("You said: %s" % answer)
+    print(f"You said: {answer}")
     sys.stdout.write(AFTER_OUTPUT.format(command_status=0))

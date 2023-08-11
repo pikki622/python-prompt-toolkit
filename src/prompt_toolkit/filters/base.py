@@ -125,10 +125,7 @@ class _AndList(Filter):
 
         # If only one filter is left, return that without wrapping into an
         # `_AndList`.
-        if len(filters) == 1:
-            return filters[0]
-
-        return cls(filters)
+        return filters[0] if len(filters) == 1 else cls(filters)
 
     def __call__(self) -> bool:
         return all(f() for f in self.filters)
@@ -168,10 +165,7 @@ class _OrList(Filter):
 
         # If only one filter is left, return that without wrapping into an
         # `_AndList`.
-        if len(filters) == 1:
-            return filters[0]
-
-        return cls(filters)
+        return filters[0] if len(filters) == 1 else cls(filters)
 
     def __call__(self) -> bool:
         return any(f() for f in self.filters)

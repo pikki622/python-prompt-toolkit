@@ -84,9 +84,9 @@ def _send_to_everyone(sender_connection, name, message, color):
         if c != sender_connection:
             c.send_above_prompt(
                 [
-                    ("fg:" + color, "[%s]" % name),
+                    (f"fg:{color}", f"[{name}]"),
                     ("", " "),
-                    ("fg:" + color, "%s\n" % message),
+                    (f"fg:{color}", "%s\n" % message),
                 ]
             )
 

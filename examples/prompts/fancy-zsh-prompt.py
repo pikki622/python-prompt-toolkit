@@ -72,7 +72,7 @@ def get_prompt() -> HTML:
 def main() -> None:
     while True:
         answer = prompt(get_prompt, style=style, refresh_interval=1)
-        print("You said: %s" % answer)
+        print(f"You said: {answer}")
 
 
 if __name__ == "__main__":

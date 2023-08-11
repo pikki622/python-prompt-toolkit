@@ -52,7 +52,6 @@ class Input(metaclass=ABCMeta):
 
     def flush(self) -> None:
         "The event loop can call this when the input has to be flushed."
-        pass
 
     @abstractproperty
     def closed(self) -> bool:
@@ -87,7 +86,6 @@ class Input(metaclass=ABCMeta):
 
     def close(self) -> None:
         "Close input."
-        pass
 
 
 class PipeInput(Input):
@@ -116,7 +114,7 @@ class DummyInput(Input):
         raise NotImplementedError
 
     def typeahead_hash(self) -> str:
-        return "dummy-%s" % id(self)
+        return f"dummy-{id(self)}"
 
     def read_keys(self) -> list[KeyPress]:
         return []
